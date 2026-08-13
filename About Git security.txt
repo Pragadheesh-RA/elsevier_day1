@@ -1,0 +1,66 @@
+About Git security :
+Code protection in git
+Code protection in Git refers to the measures and features implemented to safeguard the codebase from unauthorized access, potential security vulnerabilities, and accidental leaks of sensitive information. This includes using private repositories, managing access controls and permissions, and employing security scanning tools to detect and prevent the presence of secrets in the code. GitHub's security features, such as push protection and secret scanning, play a crucial role in ensuring that sensitive credentials and other secrets are not pushed to repositories, thereby protecting the integrity and security of the codebase.
+
+Git Push Protection:
+GitHub Push Protection is a proactive security feature that scans for sensitive information (like API keys, tokens, or credentials) before code is pushed to a repository. Unlike traditional secret scanning, which detects leaks after commits are made, push protection blocks the push in real time, reducing the risk of accidental exposure.
+
+Purpose of GIT SBOM :
+A Git SBOM (Software Bill of Materials) is a machine-readable inventory of all components, libraries, and dependencies that make up a software project stored in a Git repository. It is used to improve software supply chain security, ensure license compliance, and provide transparency into the origins of code.
+Runner:
+In the context of DevOps, a 'Runner' is a lightweight, highly-scalable agent that picks up and executes jobs in a CI/CD (Continuous Integration/Continuous Deployment) pipeline. Runners are responsible for creating and managing the environment where the jobs are executed.
+
+Upload and download artifacts while cleaning up from build phase:{Store purpose}
+You can use the upload-artifact and download-artifact actions to share data between jobs in a workflow. This example workflow illustrates how to pass data between jobs in the same workflow. For more information, see the actions/upload-artifact and download-artifact actions.
+
+name: Share data between jobs
+
+on: [push]
+
+jobs:
+  job_1:
+    name: Add 3 and 7
+    runs-on: ubuntu-latest
+    steps:
+      - shell: bash
+        run: |
+          expr 3 + 7 > math-homework.txt
+      - name: Upload math result for job 1
+        uses: actions/upload-artifact@v4
+        with:
+          name: homework_pre
+          path: math-homework.txt
+
+  job_2:
+    name: Multiply by 9
+    needs: job_1
+    runs-on: windows-latest
+    steps:
+      - name: Download math result for job 1
+        uses: actions/download-artifact@v5
+        with:
+          name: homework_pre
+      - shell: bash
+        run: |
+          value=`cat math-homework.txt`
+          expr $value \* 9 > math-homework.txt
+      - name: Upload math result for job 2
+        uses: actions/upload-artifact@v4
+        with:
+          name: homework_final
+          path: math-homework.txt
+
+  job_3:
+    name: Display results
+    needs: job_2
+    runs-on: macOS-latest
+    steps:
+      - name: Download math result for job 2
+        uses: actions/download-artifact@v5
+        with:
+          name: homework_final
+      - name: Print the final result
+        shell: bash
+        run: |
+          value=`cat math-homework.txt`
+          echo The result is $value
